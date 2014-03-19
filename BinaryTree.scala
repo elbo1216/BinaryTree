@@ -60,15 +60,67 @@ object BinaryTree {
       }
     }
   }
+
+  def randomBalancedBinaryTreeGenerator(depth: Int): List[List[String]] = {
+    Seq.range(0, depth + 1, 1).map( elem => Seq.fill(scala.math.pow(2,elem).toInt)(scala.util.Random.alphanumeric.take(5).mkString).toList).toList
+  }
+
+  def printPretty(tree: List[List[String]]) {
+
+    def spacer(size: Int): String = Seq.fill(size)(" ").mkString
+
+    // Find the tree's max width/height
+    val numSpacePerNode = 7
+    val width = tree.last.map( node => node.size).sum + numSpacePerNode*(tree.last.size)
+    val height = tree.size*2
+    val resList:ListBuffer[String] = ListBuffer()
+
+    tree.reverse.foreach { level =>
+      var treeLeg = ""
+      var leg = "/"
+      if (resList.size == 0) {
+        val nodeStr = level.foldLeft("") {(b,a) => 
+          treeLeg = treeLeg + spacer(a.size/2) + leg + spacer(a.size-a.size/2 - 1) + spacer(numSpacePerNode)
+          if (leg == "/") { leg = "\\"} else { leg = "/" }
+          b ++ a ++ spacer(numSpacePerNode)
+        }
+        resList.append(nodeStr)
+        resList.append(treeLeg)
+      } else {
+        val prevTreeLeg = resList.last
+        var legCounter = 0
+        var nodeStr = ""
+        level.foreach { node =>
+          val leftLeg = prevTreeLeg.indexOf("/", legCounter)
+          val rightLeg = prevTreeLeg.indexOf("\\", legCounter)
+          val position = if (rightLeg-leftLeg > node.size) {
+            leftLeg + 1 + (rightLeg-leftLeg-node.size)/2
+          } else {
+            leftLeg + 1 - (node.size-rightLeg-leftLeg/2)
+          }
+          nodeStr = nodeStr + spacer(position - nodeStr.size) + node
+          treeLeg = treeLeg + spacer(position - treeLeg.size  + node.size/2) + leg
+          if (leg == "/") { leg = "\\"} else { leg = "/" }
+          legCounter = rightLeg + 1
+        }
+        resList.append(nodeStr)
+        if (level.size > 1)
+          resList.append(treeLeg)
+      }
+    }
+    resList.reverse.foreach { item => println(item) }
+
+  }
 }
 
-val a  = List(List("1"), List("2","3"), List("4","5","6","7"), List("8","9","10","11","12","13","14","15"))
+//TEST
+val a  = BinaryTree.randomBalancedBinaryTreeGenerator(2)
+BinaryTree.printPretty(a)
 val tree = BinaryTree.ListToNode(a)
-println(tree.size)
 val recursive = BinaryTree.recursSerializeTreeToList(tree(0), 0)
 val iterative = BinaryTree.iterSerializeTreeToList(tree(0), 0)
-println(recursive)
-println(iterative)
+//println(recursive)
+//println(iterative)
 
 
 // vim: set ts=4 sw=4 et:
